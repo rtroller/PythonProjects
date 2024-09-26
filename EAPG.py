@@ -33,12 +33,6 @@ def process_file(input_file, output_file):
                 # Calculate BaseRateUsed and round to two decimal places
                 base_rate_used = round(total_payment / total_weight, 2) if total_weight != 0 else 0
                 
-                # Debugging output
-                # print(f"Item Adjusted Values: {item_adjusted_values}")
-                # print(f"Total Weight: {total_weight}")
-                # print(f"Total Payment: {total_payment}")
-                # print(f"BaseRateUsed (Rounded): {base_rate_used}")
-                
                 # Insert the BaseRateUsed as a new value in the 15th column
                 fields[base_rate_index] = f"{base_rate_used:.2f}"
 
@@ -69,6 +63,18 @@ def process_file(input_file, output_file):
                 # Generate records based on the number of values in the main comma field
                 for i in range(num_values):
                     new_fields = [values[i] for values in split_fields]
+                    
+                    # Calculate new TotalPayment as the product of current ItemAdjustedEapgWeight and BaseRateUsed
+                    try:
+                        current_weight = float(new_fields[item_adjusted_index])
+                        current_base_rate_used = float(new_fields[base_rate_index])
+                        new_total_payment = round(current_weight * current_base_rate_used, 2)
+                        new_fields[total_payment_index] = f"{new_total_payment:.2f}"
+                    except ValueError:
+                        print(f"Error calculating new TotalPayment for record: {new_fields}")
+                        continue
+
+                    # Write the new record to the output file
                     new_line = '|'.join(new_fields)
                     outfile.write(new_line + '\n')
 
@@ -78,5 +84,7 @@ output_file = r'C:\Users\RTrol\OneDrive\Desktop\EAPG\Output.txt'
 
 # Run the function
 process_file(input_file, output_file)
+
+
 
 
