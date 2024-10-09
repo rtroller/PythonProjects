@@ -1,9 +1,17 @@
+from collections import defaultdict
+
 def process_file(input_file, output_file):
     with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
-        # Read the header and write it to the output file (adding BaseRateUsed to the header)
-        header = infile.readline().strip()
-        outfile.write(header + '\n')
+        # Read the header and write it to the output file, adding SequenceNumber as the second column
+        header = infile.readline().strip().split('|')
+        # Insert 'SequenceNumber' after the first field (AccountNumber)
+        header.insert(1, 'SequenceNumber')
+        # Write the updated header to the output file
+        outfile.write('|'.join(header) + '\n')
         
+        # Dictionary to track the sequence number for each AccountNumber
+        account_sequence_counters = defaultdict(int)
+
         # Process each subsequent line
         for line in infile:
             line = line.strip()  # Remove any surrounding whitespace or newlines
@@ -14,11 +22,15 @@ def process_file(input_file, output_file):
                 item_adjusted_index = 14  # Index of ItemAdjustedEapgWeight (15th column)
                 total_payment_index = 11   # Index of TotalPayment (12th column)
                 base_rate_index = 15       # Column to which BaseRateUsed will be added (16th column)
+                account_number_index = 0   # Assuming AccountNumber is the 1st column
                 
-                if len(fields) <= max(item_adjusted_index, total_payment_index, base_rate_index):
+                if len(fields) <= max(item_adjusted_index, total_payment_index, base_rate_index, account_number_index):
                     print(f"Warning: Skipping line due to insufficient columns: {line}")
                     continue
                 
+                # Retrieve the AccountNumber
+                account_number = fields[account_number_index]
+
                 # Sum up the comma-separated values in the ItemAdjustedEapgWeight field
                 item_adjusted_values = list(map(float, fields[item_adjusted_index].split(',')))
                 total_weight = sum(item_adjusted_values)
@@ -63,6 +75,10 @@ def process_file(input_file, output_file):
                 # Generate records based on the number of values in the main comma field
                 for i in range(num_values):
                     new_fields = [values[i] for values in split_fields]
+
+                    # Increment the sequence number for this AccountNumber for each record
+                    account_sequence_counters[account_number] += 1
+                    sequence_number = account_sequence_counters[account_number]
                     
                     # Calculate new TotalPayment as the product of current ItemAdjustedEapgWeight and BaseRateUsed
                     try:
@@ -74,6 +90,9 @@ def process_file(input_file, output_file):
                         print(f"Error calculating new TotalPayment for record: {new_fields}")
                         continue
 
+                    # Add the sequence number to the new_fields list
+                    new_fields.insert(account_number_index + 1, str(sequence_number))
+
                     # Write the new record to the output file
                     new_line = '|'.join(new_fields)
                     outfile.write(new_line + '\n')
@@ -84,6 +103,7 @@ output_file = r'C:\Users\RTrol\OneDrive\Desktop\EAPG\Output.txt'
 
 # Run the function
 process_file(input_file, output_file)
+
 
 
 
