@@ -2,10 +2,16 @@ from collections import defaultdict
 
 def process_file(input_file, output_file):
     with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
-        # Read the header and write it to the output file, adding SequenceNumber as the second column
+        # Read the header and split it
         header = infile.readline().strip().split('|')
+        
         # Insert 'SequenceNumber' after the first field (AccountNumber)
         header.insert(1, 'SequenceNumber')
+        
+        # Remove the value in the 4th position (index 4)
+        if len(header) > 4:
+            del header[4]
+        
         # Write the updated header to the output file
         outfile.write('|'.join(header) + '\n')
         
@@ -103,8 +109,3 @@ output_file = r'C:\Users\RTrol\OneDrive\Desktop\EAPG\Output.txt'
 
 # Run the function
 process_file(input_file, output_file)
-
-
-
-
-
