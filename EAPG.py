@@ -1,5 +1,7 @@
 from collections import defaultdict
+import csv
 
+# Function to process the input file and write the output
 def process_file(input_file, output_file):
     with open(input_file, 'r') as infile, open(output_file, 'w') as outfile:
         # Read the header and split it
@@ -8,9 +10,9 @@ def process_file(input_file, output_file):
         # Insert 'SequenceNumber' after the first field (AccountNumber)
         header.insert(1, 'SequenceNumber')
         
-        # Remove the value in the 4th position (index 4)
-        if len(header) > 4:
-            del header[4]
+        # Set the value in the 4th position (index 3) to 'ItemServiceDate'
+        if len(header) > 3:
+            header[3] = 'ItemServiceDate'
         
         # Write the updated header to the output file
         outfile.write('|'.join(header) + '\n')
@@ -103,9 +105,29 @@ def process_file(input_file, output_file):
                     new_line = '|'.join(new_fields)
                     outfile.write(new_line + '\n')
 
+# Function to remove the column at index 4
+def remove_column_at_index_4(output_file):
+    # Read the file and process the rows
+    with open(output_file, 'r') as infile:
+        reader = csv.reader(infile, delimiter='|')
+        rows = [row for row in reader]
+    
+    # Remove the column at index 4 for each row
+    for row in rows:
+        if len(row) > 4:
+            del row[4]
+    
+    # Write the updated rows back to the file
+    with open(output_file, 'w', newline='') as outfile:
+        writer = csv.writer(outfile, delimiter='|')
+        writer.writerows(rows)
+
 # Specify input and output file paths
 input_file = r'C:\Users\RTrol\OneDrive\Desktop\EAPG\EAPG_837_Output_9_9_2024_369.csv'
 output_file = r'C:\Users\RTrol\OneDrive\Desktop\EAPG\Output.txt'
 
-# Run the function
+# Run the function to process the file
 process_file(input_file, output_file)
+
+# Now remove the column at index 4
+remove_column_at_index_4(output_file)
